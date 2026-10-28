@@ -18,6 +18,10 @@ Report is one offline file, autoescaped, verdict spelled out (greyscale-safe).
 Deviation from the Phase 4 done-when: 20261016 is NEEDS A LOOK, not clean — run
 `172652` is `C` but commented "Delete File" (zero-length export, empty lasers),
 and no Qinertia project was copied. Both are real; kept. Next: Phase 5 (GUI).
+Crew-facing text names a run as "session <run id> (section <Daily Section>)" —
+Derek's choice, 2026-10-28 (`checks.base.run_label` / `rd_label`); never by clock time.
+Repo: github.com/dapfromcanada/QCDATA — Derek pushes. Real-data tests need
+`QCDATA_SAMPLE_ROOT` pointing at the folder holding `17thAnd16th`.
 
 Phase 3 (check engine) complete — 2026-10-28. 15 checks (C1–C11,
 C14–C17), explained-by-the-crew rule, partial-copy guard, crash isolation, caps,
@@ -27,7 +31,7 @@ green. Reference day 2026-10-17 = PASS. Next: Phase 4 (HTML report + CLI).
 Phase 2 (parsers and data model) complete — 2026-10-28.
 
 Phase 1 (environment) complete — 2026-10-28. uv project on Python
-3.13, `uv.lock` in place (no git repo yet), package skeleton (`qcdata/core|cli|gui|config`),
+3.13, `uv.lock` in place, package skeleton (`qcdata/core|cli|gui|config`),
 `launch.bat` (development), `.gitignore`, `.env.example`. `qcdata version` works;
 4 tests green; pip-audit clean.
 
