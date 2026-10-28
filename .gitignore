@@ -1,0 +1,28 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# --- uv / virtual environment ---
+.venv/
+
+# --- Secrets (Phase 6) - never commit ---
+.env
+
+# --- QCDATA output and per-user state (never track) ---
+_QCDATA/
+qcdata_state.json
+
+# --- Large sample data (13 GB real input) - keep only the README ---
+SampleData/*
+!SampleData/README.md
+
+# --- Editor / OS cruft ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

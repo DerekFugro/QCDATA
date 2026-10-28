@@ -1,0 +1,39 @@
+[project]
+name = "qcdata"
+dynamic = ["version"]
+description = "Checks a sidewalk collection drive for missing or incomplete data (photos, lasers, SBG, logs) and writes a plain-language PASS / WARN / FAIL report."
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+# Runtime dependencies. Exact pins where the spec fixes a version.
+dependencies = [
+    "PySide6-Essentials==6.11.3", # Desktop GUI. QtWidgets etc. only - no Addons (smaller exe). Used from Phase 5.
+    "Jinja2==3.1.6",              # HTML report templating (Phase 4). Autoescape ON.
+    "PyYAML>=6,<7",               # config.yaml - yaml.safe_load only.
+    "defusedxml==0.7.1",          # Safe parsing of ARAN01_Settings_*.xml (untrusted XML).
+    "tzdata>=2026.6",             # Time-zone database for zoneinfo - required on Windows (no system tz data).
+]
+
+[project.scripts]
+qcdata = "qcdata.cli.main:main"
+
+[project.gui-scripts]
+qcdata-gui = "qcdata.gui.app:main"
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",     # Test framework (every phase gate)
+    "pip-audit==2.10.1", # Dependency vulnerability audit (final gate)
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "qcdata/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["qcdata"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

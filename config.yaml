@@ -1,0 +1,54 @@
+# QCDATA settings.
+# The Settings screen also writes this file. Any key left out uses its default.
+# Unknown keys are rejected, so a typo is caught instead of silently ignored.
+
+# Drive letters where collection drives show up. Used to find a remembered
+# folder again if the drive letter changed.
+data_drives: ["F:", "G:"]
+
+# Payload folder names at the drive root (matched ignoring case).
+folders:
+  images: Images
+  gocator: GoCatorData
+  sbg: SBGData
+
+# PC names used in ACS log file names (the PC was renamed on 2026-10-09).
+pc_names: [ARAN01-SERVER, ARANSW1-SERVER]
+
+local_timezone: America/New_York   # for "true local time" in the photo list
+tai_minus_utc_s: 37                # laser ptpTimestamp is TAI; TAI - UTC
+sbg_match_tolerance_s: 2           # DataLogger folder name may be 1 s off the run
+expected_step_mm: 750              # cross-check only; the step is derived per run
+partial_copy_threshold: 0.5        # above this share of runs with no payload -> one "partly copied" WARN
+max_findings_per_check: 500
+
+# Turn individual checks on or off. C13 (database) arrives in Phase 6.
+checks:
+  C1: true
+  C2: true
+  C3: true
+  C4: true
+  C5: true
+  C6: true
+  C7: true
+  C8: true
+  C9: true
+  C10: true
+  C11: true
+  C13: false
+  C14: true
+  C15: true
+  C16: true
+  C17: true
+
+thresholds:
+  c6_warn_m: 3.0               # photos stop this far short of the recorded end -> WARN
+  c6_fail_m: 8.0               # ... this far -> FAIL
+  c10_max_abs_diff: 25         # laser L/R row counts may differ by this many rows...
+  c10_max_pct_diff: 1.0        # ... or this percent, whichever is larger
+  laser_short_pulses: 2        # pulses (0.75 m each) outside a laser's data before WARN
+  min_pulse_gap_s: 0.13        # a pulse closer than this to the previous gets no photo
+  normal_end_short: 2          # photos short at the end that are normal
+  stop_s: 5.0                  # a pulse gap this long counts as a stop
+  clock_drift_note_s: 2.0      # PC-vs-GPS drift within a day worth highlighting
+  frame_log_tolerance_s: 0.1   # photo-time self-check: allowed deviation from the day's typical camera-log delay (~0.4 s)
