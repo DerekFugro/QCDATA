@@ -10,9 +10,12 @@ folder — the day's export files, the collection logs, and the image/profile
 payload — cross-checks them against each other, and writes one plain-language HTML
 report giving a non-technical crew member a PASS / WARN / FAIL verdict.
 
-**Status: Phase 2 (parsers and data model) complete — 2026-10-28.** Every file
-format parses; 66 tests green against fixtures and the real sample data. Next:
-Phase 3 (check engine).
+**Status: Phase 3 (check engine) complete — 2026-10-28.** 15 checks (C1–C11,
+C14–C17), explained-by-the-crew rule, partial-copy guard, crash isolation, caps,
+verdict roll-up, report data, per-photo records, add-only write guard. 109 tests
+green. Reference day 2026-10-17 = PASS. Next: Phase 4 (HTML report + CLI).
+
+Phase 2 (parsers and data model) complete — 2026-10-28.
 
 Phase 1 (environment) complete — 2026-10-28. uv project on Python
 3.13, `uv.lock` in place (no git repo yet), package skeleton (`qcdata/core|cli|gui|config`),
@@ -133,14 +136,20 @@ Source: `F:\001_BuggyData\001_RawData\100_Signoff`. Read-only.
     counter drops "SBG restarts" were wrong — they were rollovers.
   - Longest stop 21.1 s (`151845`); typical pulse gap 0.35–0.65 s.
   - Every Daily row has `GPS Mode = NoSolution` (technical section only).
+  - **Phase 3 verdict: PASS** (no crew findings; 3 explained; technical notes only).
 - `17thAnd16th\20261016\` → 48 exported runs, only 4 with photos — but the Daily
   marks the other **44 as `X`** (deleted by the crew), and the 4 `C` runs are
   exactly the 4 with photos. So it is a complete day, **not** a partial copy;
-  the partial-copy guard is tested on a synthetic day instead.
+  the partial-copy guard is tested on a synthetic day instead. **Phase 3 verdict:
+  WARN** — run `172652` is `C` but commented "Delete File - due to ACS errors"
+  (zero-length export, empty laser files), and no Qinertia project for the day.
 - `Zipfiles\Batch1\` → **the multi-day reference** — the standard layout with six
   days. Oct 15 has a Daily (37 rows) but no export log anywhere in the folder →
   WARN, "choose the log folder". Oct 16 was exported twice (09:39: first 2 runs;
-  18:07: all 48 again). Oct 14 has no logs. No Qinertia projects at all.
+  18:07: all 48 again). Oct 14 has no logs. No Qinertia projects at all. The
+  partial-copy guard fires on Oct 14, 15 and 17 (a partial copy). Oct 15's
+  4:55:18 PM run: both lasers recorded no data during the run, with status
+  "2501 - GoCator L/R PTP Time is invalid".
 - The two `20261009_*Reverse*` folders → the **positive QC_Video case**: 28 real
   tail losses with photos present, all confirmed independently. The other
   folders are extra QC_Video checks; some use an older nested layout the app

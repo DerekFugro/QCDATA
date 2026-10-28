@@ -314,12 +314,13 @@ No new packages.
 - [ ] Inventory has exactly one record per image file for the reference day.
 - [ ] **Synthetic partial day** (48 `C` runs, 4 with photos) → exactly one
       day-level partial-copy WARN, not 44 C3 findings.
-- [ ] **Real 2026-10-16** → no missing-data findings; its 44 `X` runs under
+- [ ] **Real 2026-10-16** → WARN with exactly 2 C6 + 2 C10 (run `172652`, quoting
+      its "Delete File" comment) + 1 C11 (no Qinertia project); its 44 `X` runs under
       "Explained by the crew".
 - [ ] `test_c5_detects_injected_gap` passes, and the reported missing distance is
       the exact value deleted.
-- [ ] `test_9057_resolved_by_pulse_check` passes — technical section only; the
-      verdict stays PASS.
+- [ ] `165541`'s `9057` rows sit in the technical section beside "no photos lost"
+      (in `test_reference_day_verdict`); the verdict stays PASS.
 - [ ] `test_c6_zero_end_is_special_cased` passes.
 - [ ] `test_c8_aggregates_by_code` passes — 104 `9056` rows produce one finding.
 - [ ] `test_c10_tolerates_small_lr_difference` passes at a 3-line difference.

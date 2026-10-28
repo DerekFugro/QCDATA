@@ -93,10 +93,13 @@ in without rework.
    - GPS mode `NoSolution` on every Daily row;
    - `154208`: both lasers started one pulse (≈0.75 m) after the cameras — within
      the normal two.
-2. On `20261016` (48 exported runs, 4 with photos), the app reports **no
-   missing-data findings**: the Daily marks the 44 runs without photos as `X`
-   (deleted by the crew), and the 4 `C` runs are exactly the 4 with photos
-   (found in Phase 2). The 44 are listed under "Explained by the crew". The
+2. On `20261016` (48 exported runs, 4 with photos), the Daily marks the 44 runs
+   without photos as `X` (deleted by the crew) — all listed under "Explained by the
+   crew", none reported as missing. The day is **WARN** for two real reasons found
+   in Phase 3: run `172652` is marked `C` but the crew's comment says "Delete File -
+   due to ACS errors", and it was exported with zero length and has empty laser
+   files (2 C6 + 2 C10 WARNs, each quoting the crew's comment); and there is no
+   Qinertia project for the day (C11). The
    **partial-copy guard** (below) is still required and still the most important
    behaviour — a report that cries wolf 44 times will be ignored, and then a real
    failure will be ignored with it — but it is now tested on a synthetic day
@@ -455,6 +458,10 @@ runs belong to the day** (confirmed by Derek).
   with no run, e.g. "sidewalk does not exist") is listed, never joined.
 - Read every column by header name, never by position.
 
+**A `C` run whose comment starts `Delete File`** keeps its findings (the status
+decides), but each one quotes the crew's comment and says "Check whether this run
+should have been marked deleted (X) in the Daily." (Real case: `20261016.172652`.)
+
 **The explained-findings rule.** Before a check emits a WARN or FAIL for a run,
 look the run up in the Daily. A run whose comment contains `Section Collected Short`
 (often after an `Other - ...` note)
@@ -724,7 +731,7 @@ enable/disable-able and threshold-able from `config.yaml`, returning zero or mor
 | **C7** | Runs on disk or in `StatusMessages` with no Daily row — not part of the day (false starts) | Information, technical section only; never raises the verdict |
 | **C8** | `StatusMessages` warning/error scan, aggregated by message code | Information, technical section only. A `9057` ("frames may get lost") is shown next to that run's C15 result — if C15 found no loss, it says so; if C15 found loss, C15 already reports it |
 | **C9** | `GPS Mode` in the Daily — all `NoSolution` | Information, technical section only. Blank positions are valid (confirmed by Derek) |
-| **C10** | **Lasers**, per run and side: missing / empty / short reported separately; `frameIndex` gaps; L and R row counts within tolerance | FAIL missing; WARN empty; WARN `frameIndex` gaps (with count); WARN short; WARN L/R beyond tolerance |
+| **C10** | **Lasers**, per run and side: missing / empty / short reported separately — and "recorded no data during the run" when a file's rows all fall outside the run's pulses (quoting any `2501 ... PTP Time is invalid` status message for that side); `frameIndex` gaps; L and R row counts within tolerance | FAIL missing; WARN empty; WARN `frameIndex` gaps (with count); WARN short; WARN L/R beyond tolerance |
 | **C11** | **Every part present, checked separately** — copies often miss whole pieces (one copy arrived with no `SBGData/261017` DataLogger folders and without the previous day's Qinertia projects). Per day: `SBGData/<yymmdd>`, at least one Qinertia project `SBGData/<id>_0001`, the camera log. Per run: DataLogger folder | WARN per missing part, naming what it stops QCDATA from checking (e.g. "no DataLogger folder — photos can't be counted against pulses or timed"; "camera log not found — choose the log folder"). A missing `SBG.log` is **not** a WARN when the FrameID lines give the offset (technical note only); WARN only if neither source exists, because photos then get no PC time |
 | **C12** | *Removed.* Photos outside the root `Images\` folder — the Morning / Mid-Day / Evening sample folders and their `ReadMe.txt` receipts — don't matter (confirmed by Derek). Not checked, not reported. The ID is not reused. | — |
 | **C13** | **DEFERRED to Phase 6.** Every session/section on disk has its expected rows in the MS SQL database, and vice versa | FAIL on disk-not-in-DB; WARN on DB-not-on-disk |
@@ -947,7 +954,7 @@ Qt and without the real dataset.
     present does not reach the tolerance arithmetic.
   - `test_c8_aggregates_by_code` — 104 identical `9056` rows yield one finding.
   - `test_c10_tolerates_small_lr_difference` — a 3-line L/R difference passes.
-  - `test_9057_resolved_by_pulse_check` — `165541`'s `9057` rows sit in the
+  - (in `test_reference_day_verdict`) `165541`'s `9057` rows sit in the
     technical section beside "no photos lost"; the verdict stays PASS.
   - `test_daily_x_sessions_are_explained` — `142650`, `160558`, `161445` on
     2026-10-17 appear under "Explained by the crew", at PASS, with their comments.

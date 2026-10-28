@@ -266,3 +266,32 @@ class SettingsInfo:
     van_name: str | None
     parsed: bool
     error: str | None
+
+
+# ---------------------------------------------------------------- findings
+CREW = "crew"            # counts toward the verdict; the crew reads these
+EXPLAINED = "explained"  # explained by the crew's own Daily notes; never raises the verdict
+TECHNICAL = "technical"  # information for Derek; never raises the verdict
+
+
+@dataclass(frozen=True)
+class Finding:
+    """One thing a check found. Plain words for the crew, technical words for Derek."""
+
+    check_id: str
+    severity: Severity
+    section: str                 # CREW, EXPLAINED or TECHNICAL
+    day: str
+    run: RunId | None
+    subject: str                 # "ROW", "Rear", "Left laser", "" ...
+    message_plain: str
+    message_technical: str
+    what_to_do: str
+    details: dict = field(default_factory=dict, compare=False, hash=False)
+
+    @property
+    def sort_key(self) -> tuple:
+        n = int(self.check_id[1:]) if self.check_id[1:].isdigit() else 99
+        capped = 1 if "capped" in self.details else 0      # "...and N more" goes last in its group
+        return (self.day, {CREW: 0, EXPLAINED: 1, TECHNICAL: 2}.get(self.section, 3),
+                -self.severity.rank, n, capped, str(self.run or ""), self.subject, self.message_plain)

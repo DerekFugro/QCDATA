@@ -29,6 +29,12 @@ class FakeRun:
     with_sbg: bool = True
     sbg_name_offset_s: int = 0     # DataLogger folder named this many seconds later
     rollover_at_pulse: int | None = None  # make the device counter wrap at this pulse
+    images: bool = True            # write Images/<run>/
+    rear_photos: int | None = None # Rear count if different from ROW
+    laser_sides: str = "LR"        # which laser files to write
+    laser_rows_by_side: dict | None = None      # e.g. {"R": 30}
+    laser_start_pulse: dict | None = None       # side -> first pulse index the laser covers
+    camera_start_after_pulse: int | None = None # camera log StartAcquisition after this pulse index
 
 
 @dataclass
@@ -38,6 +44,9 @@ class FakeDay:
     daily: bool = True
     export_in_day_folder: bool = True
     acs_version: str = "2.6.5.774"
+    logs: bool = False             # write SBG.log (clock) + camera log
+    qc_video_rows: list[str] | None = None   # None = no QC_Video.csv
+    qinertia: bool = True          # write an SBGData/<day>.120000_0001 project folder
 
 
 def _w(path: Path, text: str, newline: str = "\n") -> Path:
@@ -65,6 +74,8 @@ def build(root: Path, days: list[FakeDay], *, payload_names=("Images", "GoCatorD
     for fd in days:
         dd = root / fd.day
         dd.mkdir(parents=True, exist_ok=True)
+        if fd.qinertia:
+            (sbg / f"{fd.day}.120000_0001").mkdir(parents=True, exist_ok=True)
         # Daily
         if fd.daily:
             hdr = ("FILENAME,ARAN,HEADER,Direction,Lane,From,To,Length,CollLength,FunctionalClass,"
@@ -97,23 +108,56 @@ def build(root: Path, days: list[FakeDay], *, payload_names=("Images", "GoCatorD
                       f"10/17/2026 3:00:05 PM,,")
         _w(dd / f"ARAN01_StatusMessages_{fd.day}.csv", "\n".join(sm) + "\n")
 
+        if fd.qc_video_rows is not None:
+            _w(dd / "QC_Video.csv", "Session Name,Error,View,First File,Last File,Begin Chainage,"
+               "End Chainage,Image Count\n" + "".join(x + "\n" for x in fd.qc_video_rows))
+        sbg_lines, cam_lines = [], []
         for r in fd.runs:
-            numbers = [k for k in range(1, r.photos + 1) if k not in r.drop_photos]
-            for view in ("ROW", "Rear"):
-                vdir = images / r.run / view
-                vdir.mkdir(parents=True, exist_ok=True)
-                for k in numbers:
-                    (vdir / f"{k * STEP:012d}.jpg").write_bytes(b"")
+            if r.images:
+                for view in ("ROW", "Rear"):
+                    n = r.rear_photos if (view == "Rear" and r.rear_photos is not None) else r.photos
+                    numbers = [k for k in range(1, n + 1) if k not in r.drop_photos]
+                    vdir = images / r.run / view
+                    vdir.mkdir(parents=True, exist_ok=True)
+                    for k in numbers:
+                        (vdir / f"{k * STEP:012d}.jpg").write_bytes(b"")
             if r.laser_rows is not None:
-                for side in "LR":
+                n_pulses = r.pulses if r.pulses is not None else r.photos - 1
+                for side in r.laser_sides:
                     ld = gocator / r.run
+                    ld.mkdir(parents=True, exist_ok=True)
+                    rows = (r.laser_rows_by_side or {}).get(side, r.laser_rows)
                     lines = ["frameIndex,timestamp,ptpTimestamp,encoder,numberOfProfilePoints,x0,z0"]
-                    t0 = int((run_utc_start(r.run) - 1.0 + 37) * 1e6)
-                    for i in range(r.laser_rows):
-                        lines.append(f"{i + 1},{1000 + i},{t0 + i * 100_000},{5000 + 136 * i},424,1.0,2.0")
+                    start_pulse = (r.laser_start_pulse or {}).get(side)
+                    if start_pulse is None:
+                        t0 = run_utc_start(r.run) - 1.0
+                        span = max(n_pulses * 0.5 + 2.0, 1.0)
+                    else:
+                        t0 = run_utc_start(r.run) + 0.5 * start_pulse - 0.1
+                        span = max((n_pulses - start_pulse) * 0.5 + 2.0, 1.0)
+                    step = span / max(rows - 1, 1)
+                    for i in range(rows):
+                        ptp = int((t0 + i * step + 37) * 1e6)
+                        lines.append(f"{i + 1},{1000 + i},{ptp},{5000 + 136 * i},424,1.0,2.0")
                     _w(ld / f"{r.run.replace('.', 'T')}{side}.csv", "\n".join(lines) + "\n")
             if r.with_sbg:
                 _write_sbg(sbg, r)
+            if fd.logs:
+                u0 = run_utc_start(r.run)
+                k = r.camera_start_after_pulse
+                start_utc = u0 - 0.5 if k is None else u0 + 0.5 * k + 0.1
+                n_pulses = r.pulses if r.pulses is not None else r.photos - 1
+                # cameras stop after the pulse of the last photo (before any extra pulses)
+                stop_utc = u0 + 0.5 * min(n_pulses, r.photos - 1) - 0.25 + 0.5
+                for t in (u0 - 2.0, u0 + 0.5 * n_pulses):
+                    sbg_lines.append(_sbg_line(t))
+                cam_lines += [_cam_line(start_utc - 0.3, "VC2_StartAcquisition in"),
+                              _cam_line(start_utc, "VC2_StartAcquisition out"),
+                              _cam_line(stop_utc, "VC2_StopAcquisition in")]
+        if fd.logs:
+            ld = dd / "Logs" / "ARAN01-SERVER"
+            _w(ld / "ARAN01-Server-SBG.log", "".join(sorted(sbg_lines)))
+            _w(ld / "ARAN01-SERVER-VideoLogCXP.log", "".join(sorted(cam_lines)))
     return root
 
 
@@ -149,3 +193,25 @@ def _write_sbg(sbg: Path, r: FakeRun) -> None:
         ut.append(f"{d:>10d}\t0x00a7\t0\t{g.tm_year}\t{g.tm_mon}\t{g.tm_mday}\t{g.tm_hour}\t"
                   f"{g.tm_min}\t{g.tm_sec}\t0")
     _w(folder / "utcTime.txt", "\n".join(ut) + "\n", "\r\n")
+
+
+# Fixture PC clock: the PC shows true local EDT (UTC-4) with no error.
+FIXTURE_DISPLAY_MINUS_UTC = -4 * 3600
+
+
+def _display(utc: float) -> str:
+    import datetime as _dt
+    t = _dt.datetime(1970, 1, 1) + _dt.timedelta(seconds=utc + FIXTURE_DISPLAY_MINUS_UTC)
+    return t
+
+
+def _sbg_line(utc: float) -> str:
+    t = _display(utc)
+    return (f"INFO {t.strftime('%Y-%m-%d %H:%M:%S')}.{t.microsecond // 1000:03d} [22] - CallbackUtc, "
+            f"TS HWUnix: {int(utc)} (s), TS PCUnix: {int(utc) + (utc % 1):.3f}, Delta TSUnix PC vs HW: "
+            f"{utc % 1:.3f} (PC ahead), timeStamp: 1 (HW us), status: 167\n")
+
+
+def _cam_line(utc: float, body: str) -> str:
+    t = _display(utc)
+    return f"{t.strftime('%Y-%m-%d %H:%M:%S')},{t.microsecond // 1000:03d} 0x00001aac root - {body}\n"
