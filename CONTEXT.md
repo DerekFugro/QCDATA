@@ -10,7 +10,16 @@ folder — the day's export files, the collection logs, and the image/profile
 payload — cross-checks them against each other, and writes one plain-language HTML
 report giving a non-technical crew member a PASS / WARN / FAIL verdict.
 
-**Status: Phase 3 (check engine) complete — 2026-10-28.** 15 checks (C1–C11,
+**Status: Phase 4 (report + CLI) complete — 2026-10-28.** `qcdata check`
+writes the HTML report, findings JSON and per-photo CSV to `_QCDATA\` (add-only,
+`-2` on a clash; read-only drive → message, nothing written). Exit codes 0–4.
+Report is one offline file, autoescaped, verdict spelled out (greyscale-safe).
+135 tests green with sample data. Reference: 20261017 PASS, 28 Daily sessions.
+Deviation from the Phase 4 done-when: 20261016 is NEEDS A LOOK, not clean — run
+`172652` is `C` but commented "Delete File" (zero-length export, empty lasers),
+and no Qinertia project was copied. Both are real; kept. Next: Phase 5 (GUI).
+
+Phase 3 (check engine) complete — 2026-10-28. 15 checks (C1–C11,
 C14–C17), explained-by-the-crew rule, partial-copy guard, crash isolation, caps,
 verdict roll-up, report data, per-photo records, add-only write guard. 109 tests
 green. Reference day 2026-10-17 = PASS. Next: Phase 4 (HTML report + CLI).

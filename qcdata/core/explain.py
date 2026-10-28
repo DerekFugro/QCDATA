@@ -25,7 +25,7 @@ def apply(day: DayData, findings: list[Finding]) -> list[Finding]:
         if f.section == CREW and f.run in delete_noted:
             f = replace(f, message_plain=f"{f.message_plain} The crew wrote \u201c{delete_noted[f.run]}\u201d "
                                       f"but the Daily still marks this run as collected.",
-                        what_to_do="Check whether this run should have been marked deleted (X) in the Daily.")
+                        what_to_do=f"Check whether {run_label(f.run)} should have been marked deleted (X) in the Daily.")
         if f.section == CREW and f.check_id == "C6" and f.run in short_runs:
             out.append(replace(f, severity=Severity.PASS, section=EXPLAINED,
                                message_plain=f"{f.message_plain} The crew noted: “{short_runs[f.run]}”",

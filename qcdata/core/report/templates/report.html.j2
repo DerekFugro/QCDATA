@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QCDATA — {{ r.overall_verdict_words }} — {{ r.target_name }}</title>
+<style>
+  :root {
+    --ink: #1c1f23; --muted: #5b6168; --line: #d9dde1; --paper: #ffffff; --soft: #f5f6f7;
+    --pass: #1e7d32; --pass-bg: #e8f5e9; --warn: #9a5b00; --warn-bg: #fff4e0;
+    --fail: #b3261e; --fail-bg: #fdecea;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--soft); color: var(--ink);
+         font: 16px/1.5 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1, h2, h3 { line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 1.35rem; margin-top: 32px; }
+  h3 { font-size: 1.05rem; margin-top: 20px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin: 12px 0; }
+  .banner { display: flex; align-items: center; gap: 18px; border-radius: 12px; padding: 20px 24px; border: 3px solid; }
+  .banner .icon { font-size: 44px; font-weight: 800; width: 64px; height: 64px; border-radius: 50%;
+                  display: flex; align-items: center; justify-content: center; border: 3px solid; flex: none; }
+  .banner .word { font-size: 2.1rem; font-weight: 800; letter-spacing: .02em; }
+  .banner .sub { color: var(--ink); }
+  .PASS { color: var(--pass); border-color: var(--pass); background: var(--pass-bg); }
+  .WARN { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
+  .FAIL { color: var(--fail); border-color: var(--fail); background: var(--fail-bg); }
+  .chip { display: inline-block; font-weight: 700; font-size: .8rem; padding: 2px 8px; border-radius: 999px; border: 2px solid; white-space: nowrap; }
+  .meta { color: var(--muted); font-size: .95rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  ol.todo li { margin: 6px 0; font-weight: 600; }
+  .finding { border-left: 6px solid; padding: 10px 14px; margin: 10px 0; border-radius: 6px; background: var(--paper); }
+  .finding.FAIL { border-left-color: var(--fail); background: var(--paper); color: var(--ink); }
+  .finding.WARN { border-left-color: var(--warn); background: var(--paper); color: var(--ink); }
+  .finding .what { margin-top: 4px; color: var(--muted); }
+  .finding .what b { color: var(--ink); }
+  details { margin: 12px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  .tech li { margin: 4px 0; }
+  .tech .t { color: var(--muted); font-size: .85rem; display: block; }
+  .muted { color: var(--muted); }
+  .num { text-align: right; white-space: nowrap; }
+  @media print {
+    body { background: #fff; }
+    .card, .finding { break-inside: avoid; }
+    details:not([open]) > *:not(summary) { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section class="banner {{ r.overall_verdict }}" role="status" aria-label="Overall result">
+    <div class="icon {{ r.overall_verdict }}" aria-hidden="true">{{ icon(r.overall_verdict) }}</div>
+    <div>
+      <div class="word">{{ r.overall_verdict_words }}</div>
+      <div class="sub">
+        {% if r.overall_verdict == "PASS" %}Everything QCDATA checks is there.
+        {% elif r.overall_verdict == "WARN" %}Some things need a look before you sign off. See “What to do” below.
+        {% else %}Data is missing or wrong. See “What to do” below before you leave.{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <p class="meta">
+    {{ r.target_name }} &middot; checked {{ r.checked_at_words }} &middot; QCDATA {{ r.version }}
+    {% if csv_name %}&middot; photo list: <a href="{{ csv_name }}">{{ csv_name }}</a>{% endif %}
+  </p>
+
+  <div class="card">
+    <table>
+      <tr><th>Day</th><th class="num">Runs checked</th><th class="num">Deleted by crew</th><th class="num">Photos</th><th>Result</th></tr>
+      {% for d in r.days %}
+      <tr>
+        <td><a href="#day-{{ d.day }}">{{ d.day | plain_date }}</a></td>
+        <td class="num">{{ d.stats.runs_checked }}</td>
+        <td class="num">{{ d.stats.runs_deleted_by_crew }}</td>
+        <td class="num">{{ "{:,}".format(d.stats.photos) }}</td>
+        <td><span class="chip {{ d.verdict }}">{{ icon(d.verdict) }} {{ d.verdict_words }}</span></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  {% if r.what_to_do %}
+  <h2>What to do</h2>
+  <div class="card">
+    <ol class="todo">
+      {% for item in r.what_to_do %}<li>{{ item }}</li>{% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+
+  {% for d in r.days %}
+  <h2 id="day-{{ d.day }}">{{ d.day | plain_date }} <span class="chip {{ d.verdict }}">{{ icon(d.verdict) }} {{ d.verdict_words }}</span></h2>
+  <p class="meta">
+    {{ d.stats.runs_checked }} run(s) checked &middot; {{ d.stats.problems }} problem(s) &middot; {{ d.stats.warnings }} warning(s)
+    {% if d.stats.daily_meta.get('time_in_motion') %}&middot; time in motion {{ d.stats.daily_meta.get('time_in_motion') }}{% endif %}
+  </p>
+
+  {% if d.findings %}
+    <h3>Found</h3>
+    {% for f in d.findings %}
+    <div class="finding {{ f.severity }}">
+      <span class="chip {{ f.severity }}">{{ icon(f.severity) }} {{ "PROBLEM" if f.severity == "FAIL" else "NEEDS A LOOK" }}</span>
+      {{ f.message }}
+      {% if f.what_to_do %}<div class="what"><b>What to do:</b> {{ f.what_to_do }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="card">Nothing missing for this day.</div>
+  {% endif %}
+
+
+  {% if d.images %}
+  <h3>Photos</h3>
+  <div class="card">
+    <table>
+      <tr><th>Run</th><th class="num">ROW photos</th><th class="num">Rear photos</th><th class="num">Expected (from GPS pulses)</th></tr>
+      {% for im in d.images %}
+      <tr>
+        <td>{{ im.label }}</td>
+        <td class="num">{{ "{:,}".format(im.row) if im.row is not none else "no folder" }}</td>
+        <td class="num">{{ "{:,}".format(im.rear) if im.rear is not none else "no folder" }}</td>
+        <td class="num">{{ "{:,}".format(im.expected) if im.expected is not none else "unknown" }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <p class="muted">Stops while collecting: {{ d.stats.stops }}.
+    {% if csv_name %}Every photo with its time is in <a href="{{ csv_name }}">{{ csv_name }}</a>.{% endif %}</p>
+  </div>
+  {% endif %}
+
+  <h3>QC_Video check</h3>
+  <div class="card">
+    {% if d.stats.qc_video %}
+      {% if d.stats.qc_video.compared == 0 %}QC_Video.csv listed nothing to compare for this day.
+      {% elif d.stats.qc_video.agreed == d.stats.qc_video.compared %}QC_Video agreed with QCDATA on {{ d.stats.qc_video.agreed }} of {{ d.stats.qc_video.compared }}.
+      {% else %}QC_Video agreed with QCDATA on {{ d.stats.qc_video.agreed }} of {{ d.stats.qc_video.compared }}. The differences are listed above.{% endif %}
+    {% else %}No QC_Video.csv was checked for this day.{% endif %}
+  </div>
+
+  {% if d.daily %}
+  <details open>
+    <summary>Sessions collected ({{ d.daily | length }} in the Daily)</summary>
+    <div class="card">
+      <table>
+        <tr><th>Run</th><th>Status</th><th>Section</th><th class="num">Length km</th><th class="num">Collected km</th><th>Crew comment</th><th>By</th></tr>
+        {% for row in d.daily %}
+        <tr>
+          <td>{{ row.run }}</td><td>{{ row.status_words }}</td><td>{{ row.section }}</td>
+          <td class="num">{{ row.length_km if row.length_km is not none else "" }}</td>
+          <td class="num">{{ row.collected_length_km if row.collected_length_km is not none else "" }}</td>
+          <td>{{ row.comment }}</td><td>{{ row.initials }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      <p class="muted">Collection software: ACS {{ d.stats.daily_meta.get("acs_version") or "unknown" }}
+      {% if d.stats.daily_meta.get("time_in_motion") %}&middot; time in motion {{ d.stats.daily_meta.get("time_in_motion") }}{% endif %}</p>
+    </div>
+  </details>
+  {% endif %}
+
+  {% if d.explained %}
+  <h3>Explained by the crew</h3>
+  <div class="card">
+    <ul>{% for f in d.explained %}<li>{{ f.message }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <details>
+    <summary>Technical details for the office ({{ d.technical | length }})</summary>
+    <div class="card">
+      <ul class="tech">
+        {% for f in d.technical %}
+        <li>{{ f.message }}{% if f.technical and f.technical != f.message %}<span class="t">{{ f.check }} &middot; {{ f.technical }}</span>{% else %}<span class="t">{{ f.check }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </details>
+  {% endfor %}
+
+  <p class="meta">QCDATA only reads the drive. It added this report and its files to the report folder; it changed nothing else.</p>
+</main>
+</body>
+</html>

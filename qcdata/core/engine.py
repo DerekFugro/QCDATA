@@ -65,12 +65,11 @@ def _cap(findings: list[Finding], limit: int) -> list[Finding]:
             out += fs
             continue
         out += fs[:limit]
-        if True:
-            rest = fs[limit:]
-            sev = worst(f.severity for f in rest)
-            out.append(Finding(cid, sev, section, fs[0].day, None, "",
-                               f"…and {len(rest)} more like this.", f"{len(rest)} more {cid} findings capped.",
-                               "", {"capped": len(rest)}))
+        rest = fs[limit:]
+        sev = worst(f.severity for f in rest)
+        out.append(Finding(cid, sev, section, fs[0].day, None, "",
+                           f"…and {len(rest)} more like this.", f"{len(rest)} more {cid} findings capped.",
+                           "", {"capped": len(rest)}))
     return out
 
 
