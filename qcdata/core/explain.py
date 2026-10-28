@@ -17,6 +17,7 @@ from qcdata.core.model import CREW, EXPLAINED, Finding, Severity
 
 def apply(day: DayData, findings: list[Finding]) -> list[Finding]:
     out: list[Finding] = []
+    sections = {rd.run: rd.daily.section for rd in day.runs.values() if rd.daily}
     short_runs = {rd.run: rd.daily.comment for rd in day.runs.values()
                   if rd.daily and rd.daily.is_checked and rd.daily.comment_kind == "collected_short"}
     delete_noted = {rd.run: rd.daily.comment for rd in day.runs.values()
@@ -24,8 +25,8 @@ def apply(day: DayData, findings: list[Finding]) -> list[Finding]:
     for f in findings:
         if f.section == CREW and f.run in delete_noted:
             f = replace(f, message_plain=f"{f.message_plain} The crew wrote \u201c{delete_noted[f.run]}\u201d "
-                                      f"but the Daily still marks this run as collected.",
-                        what_to_do=f"Check whether {run_label(f.run)} should have been marked deleted (X) in the Daily.")
+                                      f"but the Daily still marks this session as collected.",
+                        what_to_do=f"Check whether {run_label(f.run, sections.get(f.run))} should have been marked deleted (X) in the Daily.")
         if f.section == CREW and f.check_id == "C6" and f.run in short_runs:
             out.append(replace(f, severity=Severity.PASS, section=EXPLAINED,
                                message_plain=f"{f.message_plain} The crew noted: “{short_runs[f.run]}”",
@@ -37,12 +38,12 @@ def apply(day: DayData, findings: list[Finding]) -> list[Finding]:
             if row.status == "X":
                 comment = f" — “{row.comment}”" if row.comment else ""
                 out.append(Finding("Daily", Severity.PASS, EXPLAINED, day.day, row.run, "",
-                                   f"{cap(run_label(row.run))} was deleted by the crew{comment}.",
+                                   f"{cap(run_label(row.run, row.section))} was deleted by the crew{comment}.",
                                    f"{row.run}: Daily status X; not checked.", "",
                                    {"status": "X", "comment": row.comment}))
             elif row.status not in ("C", "V"):
                 out.append(Finding("Daily", Severity.PASS, "technical", day.day, row.run, "",
-                                   f"{cap(run_label(row.run))} has an unknown Daily status "
+                                   f"{cap(run_label(row.run, row.section))} has an unknown Daily status "
                                    f"“{row.status}”, so it wasn't checked.",
                                    f"{row.run}: Daily status {row.status!r}.", "", {}))
     return out

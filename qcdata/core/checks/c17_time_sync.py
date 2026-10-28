@@ -40,7 +40,7 @@ class C17TimeSync(Check):
                          for view, rt in views.items() if not rt.verified)
             msg = (f"Photo-time self-check: {timing.residual_count} camera-log lines, typical logging delay "
                    f"{timing.log_delay_s:.2f} s; ")
-            msg += f"{len(bad)} run-camera pair(s) did NOT match: {', '.join(bad)}." if bad else "all matched."
+            msg += f"{len(bad)} session-camera pair(s) did NOT match: {', '.join(bad)}." if bad else "all matched."
             if abs(timing.log_delay_s) > 1.0:
                 msg += " The camera log and the SBG log disagree by more than 1 s."
             out.append(self.note(ctx, None, "", msg, msg, unverified=bad))

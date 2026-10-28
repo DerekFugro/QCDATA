@@ -6,7 +6,7 @@ folders for a day and without the previous day's Qinertia projects).
 
 from __future__ import annotations
 
-from qcdata.core.checks.base import Check, register, cap, run_label
+from qcdata.core.checks.base import Check, register, cap, rd_label
 from qcdata.core.model import Severity
 
 
@@ -46,8 +46,8 @@ class C11Parts(Check):
         for rd in ctx.checked_runs:
             if rd.has_image_dir and rd.sbg is None:
                 out.append(self.crew(ctx, Severity.WARN, rd.run, "",
-                    f"{cap(run_label(rd.run))}: its SBG DataLogger folder is missing, so its photos "
+                    f"{cap(rd_label(rd))}: its SBG DataLogger folder is missing, so its photos "
                     f"can't be counted against the camera pulses or timed.",
                     f"No SBGData/{yymmdd}/<run> DataLogger within ±{ctx.cfg.sbg_match_tolerance_s} s of {rd.run}.",
-                    "Copy the run's DataLogger folder from the van."))
+                    "Copy the session's DataLogger folder from the van."))
         return out

@@ -7,7 +7,7 @@ one FAIL per run. Nothing is hidden: the runs are listed in the details.
 
 from __future__ import annotations
 
-from qcdata.core.checks.base import Check, register, cap, run_label
+from qcdata.core.checks.base import Check, register, cap, rd_label
 from qcdata.core.model import Severity
 
 
@@ -26,7 +26,7 @@ class C03Payload(Check):
             out.append(self.crew(ctx, Severity.WARN, None, "",
                 f"This day looks only partly copied — {len(bare)} of {len(runs)} runs have no photo "
                 f"or laser data at all.",
-                f"{len(bare)}/{len(runs)} checked runs have neither Images/<run> nor GoCatorData/<run> "
+                f"{len(bare)}/{len(runs)} checked sessions have neither Images/<run> nor GoCatorData/<run> "
                 f"(partial-copy guard; threshold {ctx.cfg.partial_copy_threshold}).",
                 "If you meant to copy the whole day, copy it again. If this is a partial sample, nothing is wrong.",
                 suppressed_runs=[str(rd.run) for rd in bare]))
@@ -43,7 +43,7 @@ class C03Payload(Check):
             if missing:
                 what = " and ".join(missing)
                 out.append(self.crew(ctx, Severity.FAIL, rd.run, "",
-                    f"{cap(run_label(rd.run))} has no {what}.",
+                    f"{cap(rd_label(rd))} has no {what}.",
                     f"{rd.run}: missing {', '.join(missing)} folder(s).",
-                    "Copy this run's data from the van again. If it isn't on the van either, it was lost — tell the office."))
+                    "Copy this session's data from the van again. If it isn't on the van either, it was lost — tell the office."))
         return out

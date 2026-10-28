@@ -18,6 +18,6 @@ class C07NotInDaily(Check):
             return []
         ids = sorted(str(rd.run) for rd in extra)
         return [self.note(ctx, None, "",
-            f"{len(ids)} run(s) are on the drive but not in the Daily, so they aren't part of the day "
+            f"{len(ids)} session(s) are on the drive but not in the Daily, so they aren't part of the day "
             f"(usually false starts): {', '.join(ids)}.",
             f"Runs with no Daily row: {ids}.", runs=ids)]

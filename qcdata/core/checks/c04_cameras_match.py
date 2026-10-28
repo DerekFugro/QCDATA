@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from qcdata.core.checks.base import Check, register, cap, run_label
+from qcdata.core.checks.base import Check, register, cap, rd_label
 from qcdata.core.model import Severity
 
 
@@ -17,8 +17,8 @@ class C04CamerasMatch(Check):
             if row is None or rear is None or row.count == rear.count:
                 continue
             out.append(self.crew(ctx, Severity.FAIL, rd.run, "",
-                f"{cap(run_label(rd.run))}: the two cameras have different numbers of photos "
+                f"{cap(rd_label(rd))}: the two cameras have different numbers of photos "
                 f"(ROW {row.count}, Rear {rear.count}).",
                 f"{rd.run}: ROW={row.count} Rear={rear.count}.",
-                "Copy this run's photos again. If the counts still differ, photos were lost — tell the office."))
+                "Copy this session's photos again. If the counts still differ, photos were lost — tell the office."))
         return out

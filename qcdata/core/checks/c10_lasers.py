@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from qcdata.core.checks._pulses import laser_vs_pulses
-from qcdata.core.checks.base import SIDE_NAMES, Check, register, cap, run_label
+from qcdata.core.checks.base import SIDE_NAMES, Check, register, cap, rd_label
 from qcdata.core.model import Severity
 
 
@@ -18,8 +18,8 @@ class C10Lasers(Check):
             if not rd.has_gocator_dir:
                 continue                      # C3 already reports the missing folder
             if not rd.lasers:
-                continue                      # laser files weren't read in this run (quick mode)
-            label = cap(run_label(rd.run))
+                continue                      # laser files weren't read in this session (quick mode)
+            label = cap(rd_label(rd))
             for side in ("L", "R"):
                 lf = rd.lasers.get(side)
                 name = SIDE_NAMES[side]
@@ -27,7 +27,7 @@ class C10Lasers(Check):
                     out.append(self.crew(ctx, Severity.FAIL, rd.run, name,
                         f"{label}: the {name} file is missing.",
                         f"{rd.run}: no {rd.run.value.replace('.', 'T')}{side}.csv.",
-                        "Copy this run's laser files again. If the file isn't on the van, tell the office."))
+                        "Copy this session's laser files again. If the file isn't on the van, tell the office."))
                     continue
                 if lf.state == "empty":
                     out.append(self.crew(ctx, Severity.WARN, rd.run, name,
@@ -48,11 +48,11 @@ class C10Lasers(Check):
                            if m.run == rd.run and m.code == 2501 and f"GoCator {side}" in m.message]
                     why = f" The status log says \u201c{ptp[0]}\u201d." if ptp else ""
                     out.append(self.crew(ctx, Severity.WARN, rd.run, name,
-                        f"{label}: the {name} recorded no data during the run ({lf.rows} row(s), all outside "
-                        f"the run).{why}",
+                        f"{label}: the {name} recorded no data during the session ({lf.rows} row(s), all outside "
+                        f"the session).{why}",
                         f"{lf.path.name}: {lf.rows} rows, none between the first and last camera pulse "
                         f"({total} pulses).{why}",
-                        "This run has photos but no laser data. Tell the office."))
+                        "This session has photos but no laser data. Tell the office."))
                     continue
                 if lp is not None:
                     for count, where, word in ((lp.pulses_before_first_row, "start", "starts"),

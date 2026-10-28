@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from qcdata import __version__
-from qcdata.core.checks.base import cap, run_label
+from qcdata.core.checks.base import cap, rd_label
 from qcdata.core.parsers.daily import comment_kind
 from qcdata.core.engine import CheckRun, by_section
 from qcdata.core.model import Finding
@@ -40,7 +40,7 @@ def images_rows(r) -> list[dict[str, Any]]:
         if not (rd.daily and rd.daily.is_checked):
             continue
         counts = {v: (seq.count if seq else None) for v, seq in sorted(rd.photos.items())}
-        out.append({"run": str(run), "label": cap(run_label(run)),
+        out.append({"run": str(run), "label": cap(rd_label(rd)),
                     "row": counts.get("ROW"), "rear": counts.get("Rear"),
                     "expected": len(rd.pulse_plan.photo_pulses_us) + 1 if rd.pulse_plan else None})
     return out

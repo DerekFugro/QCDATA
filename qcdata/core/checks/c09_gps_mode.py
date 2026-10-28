@@ -13,6 +13,6 @@ class C09GpsMode(Check):
         rows = [rd.daily for rd in ctx.checked_runs if rd.daily]
         if rows and all(r.gps_mode.lower() == "nosolution" for r in rows):
             return [self.note(ctx, None, "",
-                f"Every checked run in the Daily shows GPS mode “NoSolution” — positions may not "
+                f"Every checked session in the Daily shows GPS mode “NoSolution” — positions may not "
                 f"be post-processed yet.", f"{len(rows)} rows with GPS Mode=NoSolution.")]
         return []

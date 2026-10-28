@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from qcdata.core.checks.base import Check, register, cap, run_label
+from qcdata.core.checks.base import Check, register, cap, rd_label
 from qcdata.core.model import Severity
 
 
@@ -19,7 +19,7 @@ class C05PhotoHoles(Check):
                     continue
                 if seq.step_mm and seq.step_mm != expected:
                     out.append(self.crew(ctx, Severity.WARN, rd.run, view,
-                        f"{cap(run_label(rd.run))} ({view}): photos are spaced {seq.step_mm} mm "
+                        f"{cap(rd_label(rd))} ({view}): photos are spaced {seq.step_mm} mm "
                         f"apart, not the usual {expected} mm.",
                         f"{rd.run}/{view}: derived step {seq.step_mm} mm vs expected {expected} mm.",
                         "Tell the office — the camera spacing setting may have changed."))
@@ -27,9 +27,9 @@ class C05PhotoHoles(Check):
                     first = ", ".join(f"{m:012d}.jpg" for m in seq.missing_mm[:5])
                     more = f" and {len(seq.missing_mm) - 5} more" if len(seq.missing_mm) > 5 else ""
                     out.append(self.crew(ctx, Severity.FAIL, rd.run, view,
-                        f"{cap(run_label(rd.run))} ({view}): {len(seq.missing_mm)} photo(s) are "
-                        f"missing from the middle of the run.",
+                        f"{cap(rd_label(rd))} ({view}): {len(seq.missing_mm)} photo(s) are "
+                        f"missing from the middle of the session.",
                         f"{rd.run}/{view}: missing {first}{more}.",
-                        "Copy this run's photos again. If they are still missing, they were lost — tell the office.",
+                        "Copy this session's photos again. If they are still missing, they were lost — tell the office.",
                         missing=[f"{m:012d}.jpg" for m in seq.missing_mm]))
         return out

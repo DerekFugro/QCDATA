@@ -31,7 +31,7 @@ def test_reference_day_verdict(ref):
     assert "20261017.141947" in t and "20261017.154142" in t                     # C7
     assert "less than 0.13 s" in t                                               # C15 154422
     assert sum("normal allowance" in f.message_plain for f in s["technical"] if f.check_id == "C10") == 2
-    assert "Run 20261017.165541 logged" in t and "no photos lost" in t           # C8 9057
+    assert "Session 20261017.165541 logged" in t and "no photos lost" in t           # C8 9057
     assert "NoSolution" in t and "UTC−5" in t and "all matched" in t             # C9, C17
 
 

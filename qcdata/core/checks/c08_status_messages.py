@@ -51,6 +51,6 @@ class C08StatusMessages(Check):
                 if r is not None:
                     parts.append(f"{view}: {'no photos lost' if r.short == 0 else f'{r.short} photo(s) short'}")
             out.append(self.note(ctx, run, "",
-                f"Run {run} logged “frames may get lost” (9057). Pulse check: "
+                f"Session {run} logged “frames may get lost” (9057). Pulse check: "
                 f"{'; '.join(parts) or 'not available'}.", ))
         return out

@@ -26,7 +26,7 @@ class C01Files(Check):
         if not d.export_found:
             out.append(self.crew(ctx, Severity.WARN, None, "",
                 f"The export log for {d.day} wasn't found.",
-                f"No run list (header 'UniqueRun,...') with runs from {d.day} in the day folder, "
+                f"No run list (header 'UniqueRun,...') with sessions from {d.day} in the day folder, "
                 f"ExportBakFiles, or the extra log folder.",
                 "If the logs were copied somewhere else, choose that folder as the Log folder and check again."))
         if d.folder.status_messages is None:

@@ -11,7 +11,7 @@ from __future__ import annotations
 import bisect
 
 from qcdata.core.checks._pulses import photo_vs_pulses
-from qcdata.core.checks.base import Check, register, cap, run_label
+from qcdata.core.checks.base import Check, register, cap, rd_label
 from qcdata.core.model import Severity
 
 RESPONSE_WINDOW_US = 2000
@@ -25,7 +25,7 @@ class C15Pulses(Check):
         t = ctx.cfg.thresholds
         d, out = ctx.day, []
         for rd in ctx.checked_runs:
-            label = cap(run_label(rd.run))
+            label = cap(rd_label(rd))
             if rd.sbg is None or rd.pulse_plan is None:
                 continue                                  # C11 reports the missing DataLogger
             for view, seq in rd.photos.items():
@@ -47,7 +47,7 @@ class C15Pulses(Check):
                         out.append(self.crew(ctx, Severity.WARN, rd.run, view,
                             f"{label} ({view}): the cameras weren't ready at the start — {r.short} photo(s) "
                             f"missing at the start.", tech,
-                            "The start of this run has no photos. Re-collect it if needed, and tell the office."))
+                            "The start of this session has no photos. Re-collect it if needed, and tell the office."))
                     elif r.short <= t.normal_end_short:
                         where = "at the end" if r.pulses_after_camera_stop else "(position unknown)"
                         out.append(self.note(ctx, rd.run, view,
@@ -57,7 +57,7 @@ class C15Pulses(Check):
                         where = "at the end" if r.pulses_after_camera_stop else "(position unknown — no camera log)"
                         out.append(self.crew(ctx, Severity.WARN, rd.run, view,
                             f"{label} ({view}): {r.short} photo(s) missing {where}.", tech,
-                            "Copy this run's photos again; if still short, photos were lost — tell the office."))
+                            "Copy this session's photos again; if still short, photos were lost — tell the office."))
             if rd.pulse_plan.no_photo_pulses:
                 n = len(rd.pulse_plan.no_photo_pulses)
                 out.append(self.note(ctx, rd.run, "",

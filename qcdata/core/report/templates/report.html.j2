@@ -71,7 +71,7 @@
 
   <div class="card">
     <table>
-      <tr><th>Day</th><th class="num">Runs checked</th><th class="num">Deleted by crew</th><th class="num">Photos</th><th>Result</th></tr>
+      <tr><th>Day</th><th class="num">Sessions checked</th><th class="num">Deleted by crew</th><th class="num">Photos</th><th>Result</th></tr>
       {% for d in r.days %}
       <tr>
         <td><a href="#day-{{ d.day }}">{{ d.day | plain_date }}</a></td>
@@ -96,7 +96,7 @@
   {% for d in r.days %}
   <h2 id="day-{{ d.day }}">{{ d.day | plain_date }} <span class="chip {{ d.verdict }}">{{ icon(d.verdict) }} {{ d.verdict_words }}</span></h2>
   <p class="meta">
-    {{ d.stats.runs_checked }} run(s) checked &middot; {{ d.stats.problems }} problem(s) &middot; {{ d.stats.warnings }} warning(s)
+    {{ d.stats.runs_checked }} session(s) checked &middot; {{ d.stats.problems }} problem(s) &middot; {{ d.stats.warnings }} warning(s)
     {% if d.stats.daily_meta.get('time_in_motion') %}&middot; time in motion {{ d.stats.daily_meta.get('time_in_motion') }}{% endif %}
   </p>
 
@@ -118,7 +118,7 @@
   <h3>Photos</h3>
   <div class="card">
     <table>
-      <tr><th>Run</th><th class="num">ROW photos</th><th class="num">Rear photos</th><th class="num">Expected (from GPS pulses)</th></tr>
+      <tr><th>Session</th><th class="num">ROW photos</th><th class="num">Rear photos</th><th class="num">Expected (from GPS pulses)</th></tr>
       {% for im in d.images %}
       <tr>
         <td>{{ im.label }}</td>
@@ -147,7 +147,7 @@
     <summary>Sessions collected ({{ d.daily | length }} in the Daily)</summary>
     <div class="card">
       <table>
-        <tr><th>Run</th><th>Status</th><th>Section</th><th class="num">Length km</th><th class="num">Collected km</th><th>Crew comment</th><th>By</th></tr>
+        <tr><th>Session</th><th>Status</th><th>Section</th><th class="num">Length km</th><th class="num">Collected km</th><th>Crew comment</th><th>By</th></tr>
         {% for row in d.daily %}
         <tr>
           <td>{{ row.run }}</td><td>{{ row.status_words }}</td><td>{{ row.section }}</td>

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from qcdata.core.checks._pulses import pulse_utcs
-from qcdata.core.checks.base import Check, register, cap, run_label
+from qcdata.core.checks.base import Check, register, cap, rd_label
 
 
 @register
@@ -19,6 +19,6 @@ class C16Stops(Check):
             if stops:
                 desc = ", ".join(f"{s} s before photo {n}" for n, s in stops)
                 out.append(self.note(ctx, rd.run, "",
-                    f"{cap(run_label(rd.run))} stopped {len(stops)} time(s): {desc}.",
+                    f"{cap(rd_label(rd))} stopped {len(stops)} time(s): {desc}.",
                     f"{rd.run}: pulse gaps >= {stop_s} s: {stops}", stops=stops))
         return out

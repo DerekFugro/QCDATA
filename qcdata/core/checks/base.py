@@ -57,11 +57,16 @@ def register(cls):
     return cls
 
 
-def run_label(run: RunId) -> str:
-    """Plain words for a run: 'the 3:32:18 PM run'."""
-    h, m, s = int(run.value[9:11]), int(run.value[11:13]), int(run.value[13:15])
-    ampm = "AM" if h < 12 else "PM"
-    return f"the {(h % 12) or 12}:{m:02d}:{s:02d} {ampm} run"
+def run_label(run: RunId, section: str | None = "") -> str:
+    """How the crew names a run: 'session 20261017.142417 (section 315330)'.
+    The section number comes from the Daily; left off when there isn't one."""
+    sec = (section or "").strip()
+    return f"session {run.value} (section {sec})" if sec else f"session {run.value}"
+
+
+def rd_label(rd) -> str:
+    """run_label for a RunData, taking the section from its Daily row."""
+    return run_label(rd.run, rd.daily.section if rd.daily else "")
 
 
 def cap(text: str) -> str:

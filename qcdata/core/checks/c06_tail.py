@@ -7,7 +7,7 @@ the engine.
 
 from __future__ import annotations
 
-from qcdata.core.checks.base import Check, register, cap, run_label
+from qcdata.core.checks.base import Check, register, cap, rd_label
 from qcdata.core.model import Severity
 
 
@@ -35,19 +35,19 @@ class C06Tail(Check):
                 if end == 0:
                     if seq.count > 1:
                         out.append(self.crew(ctx, Severity.WARN, rd.run, view,
-                            f"{cap(run_label(rd.run))} ({view}) has {seq.count} photos but was "
+                            f"{cap(rd_label(rd))} ({view}) has {seq.count} photos but was "
                             f"exported with zero length.",
                             f"{rd.run}/{view}: EndDistanceStamp 0 with {seq.count} photos "
                             f"(last {seq.names_mm[-1] / 1000:.2f} m).",
-                            "Check this run in the Daily; tell the office if it should have been kept."))
+                            "Check this session in the Daily; tell the office if it should have been kept."))
                     continue
                 if short > t.c6_warn_m:
                     sev = Severity.FAIL if short > t.c6_fail_m else Severity.WARN
                     out.append(self.crew(ctx, sev, rd.run, view,
-                        f"{cap(run_label(rd.run))} ({view}): the photos stop {short:.1f} m before "
-                        f"the end of the run.",
+                        f"{cap(rd_label(rd))} ({view}): the photos stop {short:.1f} m before "
+                        f"the end of the session.",
                         f"{rd.run}/{view}: last photo {seq.names_mm[-1] / 1000:.2f} m, recorded end "
                         f"{end:.2f} m, shortfall {short:.2f} m.",
-                        "The end of this run has no photos. Re-collect it if needed, and tell the office.",
+                        "The end of this session has no photos. Re-collect it if needed, and tell the office.",
                         shortfall_m=round(short, 2), end_m=round(end, 2)))
         return out

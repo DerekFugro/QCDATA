@@ -140,7 +140,7 @@ def _check(args) -> int:
         print(f"{data['overall_verdict_words']} - {data['target_name']}")
         for d in data["days"]:
             print(f"  {d['day']}: {d['verdict_words']} ({d['stats']['problems']} problem(s), "
-                  f"{d['stats']['warnings']} warning(s), {d['stats']['runs_checked']} run(s) checked)")
+                  f"{d['stats']['warnings']} warning(s), {d['stats']['runs_checked']} session(s) checked)")
         for item in data["what_to_do"]:
             print(f"  What to do: {item}")
         if written and written.html:

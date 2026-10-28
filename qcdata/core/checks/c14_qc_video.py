@@ -7,7 +7,7 @@ name. QCDATA re-derives the same thing and reports any disagreement.
 
 from __future__ import annotations
 
-from qcdata.core.checks.base import Check, register, run_label
+from qcdata.core.checks.base import Check, register, rd_label
 from qcdata.core.checks.c06_tail import tail_shortfall_m
 from qcdata.core.model import Severity
 
@@ -50,24 +50,24 @@ class C14QcVideo(Check):
                         agreed += 1
                     else:
                         problem = (f"QC_Video and QCDATA both find missing photos at the end of "
-                                   f"{run_label(rd.run)} ({view}), but disagree on where.",
+                                   f"{rd_label(rd)} ({view}), but disagree on where.",
                                    f"QC_Video first/last {qv.first_file}/{qv.last_file}; QCDATA last photo "
                                    f"{seq.names_mm[-1]:012d}, end {end:.3f} m.")
                 elif qv and not ours:
-                    problem = (f"QC_Video lists missing photos at the end of {run_label(rd.run)} ({view}), "
+                    problem = (f"QC_Video lists missing photos at the end of {rd_label(rd)} ({view}), "
                                f"but QCDATA finds the photos reach the end.",
                                f"QC_Video row {qv.first_file}..{qv.last_file} n={qv.image_count}; QCDATA "
                                f"shortfall {short:.2f} m.")
                 elif ours and not qv:
                     problem = (f"QCDATA finds the photos stop {short:.1f} m short at the end of "
-                               f"{run_label(rd.run)} ({view}), but QC_Video doesn't list it.",
+                               f"{rd_label(rd)} ({view}), but QC_Video doesn't list it.",
                                f"QCDATA shortfall {short:.2f} m; no QC_Video row.")
                 else:
                     agreed += 1
                 if problem:
                     if checked:
                         out.append(self.crew(ctx, Severity.WARN, rd.run, view, problem[0], problem[1],
-                                             "Tell the office — QC_Video and QCDATA disagree about this run."))
+                                             "Tell the office — QC_Video and QCDATA disagree about this session."))
                     else:
                         out.append(self.note(ctx, rd.run, view, problem[0], problem[1]))
         unverifiable = sorted(str(k[0]) + "/" + k[1] for k in rows if k not in seen)
@@ -76,7 +76,7 @@ class C14QcVideo(Check):
                 f"{len(unverifiable)} QC_Video row(s) couldn't be checked because those photos aren't on "
                 f"this drive.", f"Unverifiable QC_Video rows: {unverifiable}", rows=unverifiable))
         out.append(self.note(ctx, None, "",
-            f"QC_Video agreed with QCDATA on {agreed} of {compared} run-camera pairs "
+            f"QC_Video agreed with QCDATA on {agreed} of {compared} session-camera pairs "
             f"({len(d.qc_video)} row(s) in QC_Video.csv).",
             f"C14 agreed={agreed} compared={compared} qc_video_rows={len(d.qc_video)}",
             agreed=agreed, compared=compared, qc_video_rows=len(d.qc_video)))
